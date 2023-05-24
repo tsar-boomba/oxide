@@ -1,8 +1,10 @@
-[package]
-name = "oxide"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = [
+    "packages/*"
+]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[workspace.dependencies]
+tokio = "1.28.1"
+thiserror = "1.0.40"
+futures-util = "0.3.28"
+tracing = "0.1.37"

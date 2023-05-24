@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# This .tmp_update folder is copied to the sd card whenever the os starts up
+# because the built-in firmware removes it
+
+cd "/mnt/SDCARD/miyoo/app"
+
+./launch.sh

@@ -1,0 +1,17 @@
+[package]
+name = "os"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { workspace = true, features = ["rt", "time", "macros", "parking_lot"] }
+tracing = { workspace = true }
+mimalloc = { version = "0.1.37", default-features = false }
+nix = { version = "0.26.2", features = ["fs"] }
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+launch = { path = "../launch" }
+miyoo-mini-hal = { path = "../miyoo-mini-hal" }
+input = { path = "../input" }
+ui = { path = "../ui" }

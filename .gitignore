@@ -1,1 +1,4 @@
 /target
+/miyoomini-toolchain
+/build
+.DS_Store

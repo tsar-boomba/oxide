@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# This is the entry point???
+echo "I ran mainui!" > /mnt/SDCARD/mainuitest.txt
+
+sync

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# This specific .tmp_update/updater is for when the os is installed/updated
+# This is the entrypoint to custom software on the miyoo mini
+cd "/mnt/SDCARD/miyoo/app"
+
+./launch.sh
