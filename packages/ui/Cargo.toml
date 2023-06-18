@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { git = "https://github.com/iced-rs/iced.git", branch = "master", default-features = false, features = ["tokio"] }
+iced = { git = "https://github.com/iced-rs/iced.git", rev = "8ae4e28", default-features = false, features = ["tokio", "debug"] }
 tokio = { workspace = true, features = ["sync"] }
 futures-util = "0.3.28"
 system = { path = "../system" }
 input = { path = "../input" }
+tracing = { workspace = true }

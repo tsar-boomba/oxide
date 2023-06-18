@@ -1,10 +1,17 @@
 #!/bin/sh
-export LD_LIBRARY_PATH="/mnt/SDCARD/miyoo/app/lib:$LD_LIBRARY_PATH"
+export WLD=/mnt/SDCARD/miyoo/app/lib/wayland
+export LD_LIBRARY_PATH="/mnt/SDCARD/miyoo/app/lib:$WLD/lib/arm-linux-gnueabihf:$WLD/lib/arm-linux-gnueabihf/weston:$LD_LIBRARY_PATH"
+export PATH=$WLD/bin:$PATH
+export FONTCONFIG_PATH=/mnt/SDCARD/miyoo/app
+export FONTCONFIG_FILE=/mnt/SDCARD/miyoo/app/fonts.conf
 
 # gfx stuff
 export ICED_BACKEND=tiny-skia
-export WAYLAND_DISPLAY=wayland-0
-export XDG_RUNTIME_DIR="/tmp/user/$(id -u)"
+export WESTON_TTY=1
+export WAYLAND_DISPLAY=wayland-1
+export XDG_RUNTIME_DIR="/tmp/user/root"
+export XKB_CONFIG_ROOT=/mnt/SDCARD/miyoo/app/lib/xkb
+
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
@@ -24,12 +31,11 @@ echo 1 > /sys/class/pwm/pwmchip0/pwm0/enable
 cat /proc/ls
 sleep 0.25
 
-./bin/compositor 1> compositor.log 2>&1 &
+ln -s $WLD /tmp/wayland
 
-# log stdout and stderr
-RUST_BACKTRACE=full ./MainUI 1> my_wogs.log 2>&1 || true
-
-cp /dev/fb0 myfile.txt
+# Start weston which will launch the actual OS when it is ready
+chmod u+s $(which weston)
+weston --debug --tty=$WESTON_TTY --logger-scopes=log,proto --config=/mnt/SDCARD/miyoo/app/weston.ini 1> weston.log 2>&1
 
 # never let the built-in firmware start (it is cringe 💀)
 sync

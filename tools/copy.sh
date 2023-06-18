@@ -4,7 +4,6 @@
 cp -r ./static/dist/.tmp_update ./build/PAYLOAD
 cp -r ./static/dist/miyoo ./build/PAYLOAD
 cp ./target/armv7-unknown-linux-gnueabihf/release/os ./build/PAYLOAD/miyoo/app/MainUI
-cp ./target/armv7-unknown-linux-gnueabihf/release/compositor ./build/PAYLOAD/miyoo/app/bin/compositor
 
 # copy libs from the deps docker container
 cp -r -L ./build/lib ./build/PAYLOAD/miyoo/app/

@@ -35,10 +35,10 @@ impl Button {
 			Key::KEY_BACKSPACE => Some(Button::R2),
 			Key::KEY_VOLUMEUP => Some(Button::VolUp),
 			Key::KEY_VOLUMEDOWN => Some(Button::VolDown),
-			Key::KEY_A => Some(Button::A),
-			Key::KEY_B => Some(Button::B),
-			Key::KEY_X => Some(Button::X),
-			Key::KEY_Y => Some(Button::Y),
+			Key::KEY_SPACE => Some(Button::A),
+			Key::KEY_LEFTCTRL => Some(Button::B),
+			Key::KEY_LEFTSHIFT => Some(Button::X),
+			Key::KEY_LEFTALT => Some(Button::Y),
 			_ => None
 		}
 	}

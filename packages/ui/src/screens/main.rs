@@ -1,4 +1,4 @@
-use iced::{widget::{row, text}, Command, Element};
+use iced::{widget::{row, text, Text}, Command, Element, color};
 
 use crate::Message;
 
@@ -17,6 +17,6 @@ impl State {
     }
 
     pub fn view(&self) -> Element<Message> {
-        row![text("Some text :D")].into()
+        row![text("hello miyoo mini").size(20).style(color!(0, 0, 255))].padding(100).into()
     }
 }

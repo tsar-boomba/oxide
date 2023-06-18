@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use iced::{executor, subscription, Application, Command, Element, Theme};
+use iced::{executor, subscription, Application, Command, Element, Theme, widget::text, color};
 use system::SystemMessage;
 use tokio::sync::mpsc;
 
@@ -41,7 +41,7 @@ impl Application for App {
     }
 
     fn view(&self) -> Element<Self::Message> {
-        self.screen.view()
+        text("hello world").size(20).style(color!(0, 0, 255)).into()
     }
 
     fn subscription(&self) -> iced::Subscription<Self::Message> {
@@ -50,6 +50,7 @@ impl Application for App {
             self.event_receiver.take(),
             move |mut event_receiver| async move {
                 let event = event_receiver.as_mut().unwrap().recv().await.unwrap();
+                tracing::info!("Ui recv ev: {event:?}");
                 (Message::System(event), event_receiver)
             },
         )

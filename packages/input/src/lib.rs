@@ -24,7 +24,7 @@ pub async fn start_input_task() -> io::Result<mpsc::Receiver<ButtonEvent>> {
                 Some(res) => match res {
                     Ok(event) => {
                         if let Some(event) = ButtonEvent::from_event(event) {
-                            sender.send(event).await.unwrap();
+                            sender.send(event).await.ok();
                         }
                     },
                     Err(err) => {

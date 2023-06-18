@@ -3,7 +3,7 @@ pub mod message;
 mod screens;
 
 use app::App;
-use iced::{Application, Settings, Font};
+use iced::{Application, Settings, Font, window::Position};
 pub use message::Message;
 
 /// Starts UI in a dedicated thread
@@ -13,8 +13,8 @@ pub fn start() {
             visible: true,
             resizable: false,
             decorations: false,
-            always_on_top: true,
-            size: (640, 480),
+            level: iced::window::Level::AlwaysOnTop,
+            position: Position::Specific(0, 0),
             ..Default::default()
         },
         flags: (),
@@ -22,7 +22,7 @@ pub fn start() {
         antialiasing: false,
         default_font: Font::DEFAULT,
         default_text_size: 20.0,
-        id: None,
+        id: Some("oxide-os".into()),
     })
     .unwrap()
 }
