@@ -1,16 +1,28 @@
 pub mod button;
 pub mod event;
 
-use std::{io, process};
+use std::{io, process, time::Instant};
 
 use evdev::Device;
 use futures_util::StreamExt;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, oneshot};
 
 pub use button::Button;
 pub use event::{ButtonEvent, EventValue};
 
-pub async fn start_input_task() -> io::Result<mpsc::Receiver<ButtonEvent>> {
+#[derive(Debug)]
+pub struct ButtonHandler {
+    pressed_at: Option<Instant>,
+    cancel: Option<oneshot::Sender<()>>,
+    handle_held: fn(),
+}
+
+impl ButtonHandler {}
+
+pub async fn input_task() -> io::Result<(
+    mpsc::Receiver<ButtonEvent>,
+    impl std::future::Future<Output = ()>,
+)> {
     let mut stream = asyncify(|| {
         let device = Device::open("/dev/input/event0")?;
         device.into_event_stream()
@@ -18,7 +30,7 @@ pub async fn start_input_task() -> io::Result<mpsc::Receiver<ButtonEvent>> {
     .await?;
     let (sender, receiver) = mpsc::channel(64);
 
-    tokio::spawn(async move {
+    let future = async move {
         loop {
             match stream.next().await {
                 Some(res) => match res {
@@ -26,7 +38,7 @@ pub async fn start_input_task() -> io::Result<mpsc::Receiver<ButtonEvent>> {
                         if let Some(event) = ButtonEvent::from_event(event) {
                             sender.send(event).await.ok();
                         }
-                    },
+                    }
                     Err(err) => {
                         eprint!("Input event stream error: {}", err);
                         process::exit(1);
@@ -38,9 +50,9 @@ pub async fn start_input_task() -> io::Result<mpsc::Receiver<ButtonEvent>> {
                 }
             }
         }
-    });
+    };
 
-    Ok(receiver)
+    Ok((receiver, future))
 }
 
 /// Spawn a task on the blocking thread pool

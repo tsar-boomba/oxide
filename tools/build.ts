@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run --allow-run --allow-env --allow-net --allow-read --allow-write
-import { ensureDirSync, emptyDirSync } from 'https://deno.land/std@0.127.0/fs/mod.ts';
+import { ensureDirSync, emptyDirSync, copySync } from 'https://deno.land/std@0.192.0/fs/mod.ts';
 import { cache } from 'https://deno.land/x/cache@0.2.13/mod.ts';
+import { getCores } from './cores.ts';
 
 const TOOLCHAIN_VERSION = 'v0.0.3';
 const TOOLCHAIN_NAME = 'miyoomini-toolchain.tar.xz';
@@ -56,9 +57,14 @@ if (!build.success) {
 	Deno.exit(build.code);
 }
 
-emptyDirSync('build');
-ensureDirSync('build/PAYLOAD/miyoo/app/lib');
-ensureDirSync('build/PAYLOAD/miyoo/app/bin');
+emptyDirSync('build/bin');
+emptyDirSync('build/lib');
+emptyDirSync('build/PAYLOAD');
+ensureDirSync('build/lib');
+ensureDirSync('build/bin');
+
+console.log('Getting cores...');
+await getCores();
 
 console.log('Getting deps...');
 const deps = new Deno.Command('./tools/deps.sh', {
@@ -83,7 +89,30 @@ if (!weston.success) {
 }
 
 console.log('Creating payload...');
-new Deno.Command('./tools/copy.sh', {
+const copy = new Deno.Command('./tools/copy.sh', {
 	stdout: 'inherit',
 	stderr: 'inherit',
 }).outputSync();
+
+if (!copy.success) {
+	Deno.exit(copy.code);
+}
+
+// TODO: make this work on any plat and support any sd card name
+const sdCardName = 'OXIDE-DEV';
+console.log(`Adding files to ${sdCardName}...`);
+new Deno.Command('rm', { args: ['-rf', `/Volumes/${sdCardName}/miyoo/**`] }).outputSync();
+copySync('build/PAYLOAD/', '/Volumes/OXIDE-DEV', { overwrite: true });
+
+const eject = new Deno.Command('diskutil', {
+	args: ['eject', `/Volumes/${sdCardName}`],
+	stdout: 'inherit',
+	stderr: 'inherit',
+}).outputSync();
+
+if (!eject.success) {
+	console.error(`Failed to eject ${sdCardName}`);
+	Deno.exit(eject.code);
+}
+
+console.log(`Finished build.`);

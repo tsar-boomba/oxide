@@ -1,39 +1,99 @@
-use std::io;
+use std::{
+    io::{self, Write},
+    marker::PhantomData,
+};
 
-use once_cell::sync::OnceCell;
-use tokio_gpiod::{Chip, DirectionType, LineId, Lines, Options, Output, Input};
+use tokio::io::AsyncWriteExt;
 
-pub const GPIO_CHIP_PATH: &str = "/sys/devices/gpiochip0";
+use crate::asyncify;
 
-static CHIP: OnceCell<Chip> = OnceCell::new();
-
-pub(crate) async fn request_lines<Direction: DirectionType>(
-    options: Options<Direction, impl AsRef<[LineId]>, impl AsRef<str>>,
-) -> io::Result<Lines<Direction>> {
-    chip().await?.request_lines(options).await
+#[derive(Debug)]
+pub struct Pin<Dir: Direction> {
+    num: u32,
+    _state: PhantomData<Dir>,
 }
 
-pub(crate) async fn output_lines(
-    options: Options<Output, impl AsRef<[LineId]>, impl AsRef<str>>,
-) -> io::Result<Lines<Output>> {
-    request_lines(options).await
+pub trait Direction {
+    fn dir() -> &'static str;
 }
 
-pub(crate) async fn input_lines(
-    options: Options<Input, impl AsRef<[LineId]>, impl AsRef<str>>,
-) -> io::Result<Lines<Input>> {
-    request_lines(options).await
+#[derive(Debug)]
+pub struct Input;
+
+impl Direction for Input {
+    fn dir() -> &'static str {
+        "in"
+    }
 }
 
-/// Asynchronously gets or initializes the gpio chip
-async fn chip() -> io::Result<&'static Chip> {
-    match CHIP.get() {
-        Some(chip) => Ok(chip),
-        None => {
-            let chip = Chip::new(GPIO_CHIP_PATH).await?;
-            CHIP.set(chip).ok();
-            
-            Ok(CHIP.get().unwrap())
-        }
+#[derive(Debug)]
+pub struct Output;
+
+impl Direction for Output {
+    fn dir() -> &'static str {
+        "out"
+    }
+}
+
+impl<Dir: Direction> Pin<Dir> {
+    pub async fn new_output(num: u32) -> io::Result<Self> {
+        asyncify(move || {
+            std::fs::OpenOptions::new()
+                .write(true)
+                .open("/sys/class/gpio/export")?
+                .write_all(num.to_string().as_bytes())?;
+            std::fs::OpenOptions::new()
+                .write(true)
+                .open(format!("/sys/class/gpio/gpio{num}/direction"))?
+                .write_all(Output::dir().as_bytes())?;
+            Ok(())
+        })
+        .await?;
+
+        Ok(Self {
+            num,
+            _state: PhantomData,
+        })
+    }
+
+    pub async fn new_input(num: u32) -> io::Result<Pin<Input>> {
+        asyncify(move || {
+            std::fs::OpenOptions::new()
+                .write(true)
+                .open("/sys/class/gpio/export")?
+                .write_all(num.to_string().as_bytes())?;
+            std::fs::OpenOptions::new()
+                .write(true)
+                .open(format!("/sys/class/gpio/gpio{num}/direction"))?
+                .write_all(Input::dir().as_bytes())?;
+            Ok(())
+        })
+        .await?;
+
+        Ok(Pin {
+            num,
+            _state: PhantomData,
+        })
+    }
+}
+
+impl Pin<Output> {
+    pub async fn set_value(&self, value: bool) -> io::Result<()> {
+        tokio::fs::OpenOptions::new()
+            .write(true)
+            .open(format!("/sys/class/gpio/gpio{}/value", self.num))
+            .await?
+            .write_all(if value { b"1" } else { b"0" })
+            .await
+    }
+}
+
+impl<Dir: Direction> Drop for Pin<Dir> {
+    fn drop(&mut self) {
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open("/sys/class/gpio/unexport")
+            .ok()
+            .map(|mut file| file.write_all(self.num.to_string().as_bytes()).ok());
     }
 }

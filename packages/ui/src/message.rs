@@ -1,7 +1,8 @@
-use system::SystemMessage;
+use miyoo_mini_hal::model::Model;
+use system::{Init, SystemMessage};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Message {
-	System(SystemMessage),
-	Noop
+    System(SystemMessage),
+    StartupDone(Init),
 }

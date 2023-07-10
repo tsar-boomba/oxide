@@ -1,3 +1,5 @@
 {
-	"deno.enable": true
+	"deno.enable": true,
+	"rust-analyzer.cargo.target": "armv7-unknown-linux-gnueabihf",
+	"rust-analyzer.cargo.buildScripts.enable": false,
 }

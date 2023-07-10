@@ -8,11 +8,10 @@ edition = "2021"
 [dependencies]
 tokio = { workspace = true, features = ["rt", "time", "macros", "parking_lot"] }
 tracing = { workspace = true }
-mimalloc = { version = "0.1.37", default-features = false }
+mimalloc = { workspace = true, default-features = false }
 nix = { version = "0.26.2", features = ["fs"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 launch = { path = "../launch" }
 miyoo-mini-hal = { path = "../miyoo-mini-hal" }
 input = { path = "../input" }
 ui = { path = "../ui" }
-winit = "0.28.6"

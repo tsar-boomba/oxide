@@ -7,8 +7,10 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["sync", "process", "parking_lot"] }
-tokio-gpiod = { version = "0.2.3", default-features = false }
 tokio-sysfs-pwm = { path = "../tokio-sysfs-pwm" }
 i2cdev = "0.5.1"
-once_cell = { version = "1.17.1", features = ["parking_lot"] }
-parking_lot = "0.12.1"
+once_cell = { workspace = true, features = ["parking_lot"] }
+parking_lot = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tracing = { workspace = true }

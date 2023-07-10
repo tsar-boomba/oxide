@@ -2,3 +2,7 @@
 /miyoomini-toolchain
 /build
 .DS_Store
+
+# Libretro frontend testing
+*.dylib
+*.gb*

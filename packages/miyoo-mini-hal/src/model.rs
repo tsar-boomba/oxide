@@ -6,10 +6,26 @@ use once_cell::sync::OnceCell;
 /// Store the model of the device this is running on and reuse
 static DEVICE_MODEL: OnceCell<Model> = OnceCell::new();
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Model {
     Mini,
     MiniPlus,
+}
+
+impl Model {
+    pub fn width(&self) -> u32 {
+        match self {
+            Self::Mini => 640,
+            Self::MiniPlus => 640,
+        }
+    }
+
+    pub fn height(&self) -> u32 {
+        match self {
+            Self::Mini => 480,
+            Self::MiniPlus => 480,
+        }
+    }
 }
 
 pub async fn model() -> io::Result<Model> {
@@ -36,7 +52,7 @@ async fn is_plus() -> io::Result<bool> {
     {
         Ok(res) => res,
         Err(err) => {
-            eprintln!("{err}");
+            tracing::error!("{err}");
             Err(io::Error::new(
                 io::ErrorKind::Other,
                 "Blocking task for i2c panicked.",

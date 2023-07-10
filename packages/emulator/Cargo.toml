@@ -1,0 +1,29 @@
+[package]
+name = "emulator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bpaf = { version = "0.8.1", features = ["derive"] }
+mimalloc = { workspace = true, default-features = false }
+libloading = "0.8.0"
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+libretro-sys = "0.1.1"
+once_cell = { workspace = true, features = ["parking_lot"] }
+parking_lot = { workspace = true }
+futures-util = { workspace = true }
+crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
+winit = { version = "0.28.6", default-features = false, features = ["wayland"] }
+softbuffer = "0.3.0"
+fixed-map = { workspace = true }
+tokio = { workspace = true, features = ["rt", "macros"] }
+input = { path = "../input" }
+ipc = { path = "../ipc", features = ["server"] }
+rgb565 = "0.1.3"
+arc-swap = "1.6.0"
+png = "0.17.9"
+nix = { workspace = true }
+fast_image_resize = "2.7.3"

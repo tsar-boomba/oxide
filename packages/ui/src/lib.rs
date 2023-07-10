@@ -1,9 +1,10 @@
 mod app;
+mod layout;
 pub mod message;
 mod screens;
 
 use app::App;
-use iced::{Application, Settings, Font, window::Position};
+use iced::{window::Position, Application, Font, Settings};
 pub use message::Message;
 
 /// Starts UI in a dedicated thread
@@ -13,8 +14,8 @@ pub fn start() {
             visible: true,
             resizable: false,
             decorations: false,
-            level: iced::window::Level::AlwaysOnTop,
             position: Position::Specific(0, 0),
+            size: (640, 480),
             ..Default::default()
         },
         flags: (),

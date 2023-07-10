@@ -88,13 +88,13 @@ impl Polarity {
 impl<'a> Pin<'a> {
     async fn open_file(&self, name: &str) -> io::Result<File> {
         tokio::fs::OpenOptions::new()
-                .read(true)
-                .write(true)
-                .open(format!(
-            "/sys/class/pwm/pwmchip{}/pwm{}/{}",
-            self.chip.num, self.num, name
-        ))
-        .await
+            .read(true)
+            .write(true)
+            .open(format!(
+                "/sys/class/pwm/pwmchip{}/pwm{}/{}",
+                self.chip.num, self.num, name
+            ))
+            .await
     }
 
     pub async fn enabled(&mut self) -> io::Result<bool> {

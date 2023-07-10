@@ -2,7 +2,7 @@ use evdev::{InputEvent, InputEventKind};
 
 use crate::Button;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ButtonEvent {
     button: Button,
     value: EventValue,
@@ -13,21 +13,23 @@ pub struct ButtonEvent {
 pub enum EventValue {
     Released = 0,
     Pressed = 1,
-    Repeat = 2,
+    /// Currently unused
+    Held = 2,
 }
 
 impl ButtonEvent {
+    pub fn new(button: Button, value: EventValue) -> Self {
+        Self { button, value }
+    }
+
     /// Attempts to construct a ButtonEvent from any InputEvent
     pub fn from_event(event: InputEvent) -> Option<Self> {
         match event.kind() {
             InputEventKind::Key(key) => {
-                // TODO: remove this, its for debugging
-                tracing::info!("Key pressed: {}", key.code());
                 let button = Button::from_key(key)?;
                 let value = match event.value() {
                     0 => Some(EventValue::Released),
                     1 => Some(EventValue::Pressed),
-                    2 => Some(EventValue::Repeat),
                     _ => None,
                 }?;
 
@@ -63,8 +65,8 @@ impl ButtonEvent {
     }
 
     #[inline(always)]
-    pub fn repeat(&self) -> bool {
-        self.value == EventValue::Repeat
+    pub fn held(&self) -> bool {
+        self.value == EventValue::Held
     }
 
     #[inline(always)]
@@ -75,5 +77,10 @@ impl ButtonEvent {
     #[inline(always)]
     pub fn is_released(&self, target: Button) -> bool {
         self.button == target && self.released()
+    }
+
+    #[inline(always)]
+    pub fn is_held(&self, target: Button) -> bool {
+        self.button == target && self.held()
     }
 }

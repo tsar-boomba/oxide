@@ -1,0 +1,21 @@
+[package]
+name = "ipc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = { version = "0.6.18", optional = true }
+serde_json = { workspace = true, optional = true }
+http = "0.2.9"
+hyper = "0.14.27"
+hyperlocal = { version = "0.8.0", default-features = false }
+once_cell = { workspace = true, features = ["parking_lot"] }
+serde = { workspace = true, features = ["derive"] }
+tokio = { workspace = true }
+
+[features]
+default = []
+client = ["serde_json", "hyper/client", "hyperlocal/client"]
+server = ["axum", "hyper/server", "hyperlocal/server"]

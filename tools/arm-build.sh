@@ -1,5 +1,8 @@
 export DOCKER_DEFAULT_PLATFORM=linux/arm64
 
+# Fail on err
+set -e
+
 docker build -t oxide-arm-build -f tools/arm-build.dockerfile .
 
 docker create --name oxide-arm-build oxide-arm-build

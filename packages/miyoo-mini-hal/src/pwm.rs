@@ -12,11 +12,11 @@ pub(crate) async fn chip() -> io::Result<&'static Chip> {
             let chip = Chip::new(0).await?;
             CHIP.set(chip).ok();
 
-			Ok(CHIP.get().unwrap())
+            Ok(CHIP.get().unwrap())
         }
     }
 }
 
 pub(crate) async fn pin(pin_num: u32) -> io::Result<Pin<'static>> {
-	chip().await?.pin(pin_num).await
+    chip().await?.pin(pin_num).await
 }

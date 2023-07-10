@@ -10,3 +10,4 @@ tokio = { workspace = true, features = ["rt", "sync"] }
 tracing = { workspace = true }
 evdev = { version = "0.12.1", features = ["tokio"] }
 futures-util = { workspace = true }
+fixed-map = { workspace = true }

@@ -19,7 +19,8 @@ RUN apt-get install -y libc6-dev-armhf-cross
 RUN apt-get install -y cmake curl git build-essential
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-RUN /root/.cargo/bin/rustup target add armv7-unknown-linux-gnueabihf
+RUN /root/.cargo/bin/rustup default nightly-2023-06-15
+RUN /root/.cargo/bin/rustup target add --toolchain nightly-2023-06-15 armv7-unknown-linux-gnueabihf
 RUN /root/.cargo/bin/cargo install cargo-chef@0.1.61 --locked
 
 # Vars needed for cross compilation
@@ -43,6 +44,7 @@ ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER="$CROSS_TOOLCHAIN_PREFIX"g
 
 FROM base AS planner
 
+COPY .cargo/config.toml .cargo/config.toml
 COPY Cargo.toml Cargo.toml
 COPY Cargo.lock Cargo.lock
 COPY packages packages
@@ -54,6 +56,7 @@ COPY --from=planner /recipe.json recipe.json
 # Build dependencies - this is the caching Docker layer!
 RUN /root/.cargo/bin/cargo chef cook --release --target armv7-unknown-linux-gnueabihf --recipe-path recipe.json
 
+COPY .cargo/config.toml .cargo/config.toml
 COPY Cargo.toml Cargo.toml
 COPY Cargo.lock Cargo.lock
 COPY packages packages
