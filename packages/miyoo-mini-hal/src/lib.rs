@@ -4,6 +4,7 @@ pub mod model;
 mod pwm;
 pub mod rumble;
 pub mod screen;
+pub mod sound;
 
 /// Spawn a task on the blocking thread pool
 pub(crate) async fn asyncify<F, T>(f: F) -> std::io::Result<T>

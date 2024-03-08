@@ -16,7 +16,7 @@ use launch::launch;
 use miyoo_mini_hal::model::{model, Model};
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
-use sysinfo::{System, SystemExt};
+use sysinfo::System;
 use tokio::sync::mpsc;
 
 pub use settings::Settings;

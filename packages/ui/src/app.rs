@@ -2,10 +2,10 @@ use std::cell::RefCell;
 
 use iced::{
     executor, subscription,
-    widget::runtime::{command::Action, window},
-    window::Mode,
-    Application, Command, Element, Theme,
+    window::{self, Id, Mode},
+    Application, Command, Element, Size, Theme,
 };
+use iced_runtime::command::Action;
 use miyoo_mini_hal::model::Model;
 use once_cell::sync::Lazy;
 use system::{games::GameCache, Init, Settings, SystemMessage};
@@ -77,10 +77,13 @@ impl Application for App {
                 settings,
                 games,
             }) => {
-                let command = Command::single(Action::Window(window::Action::Resize {
-                    width: model.width(),
-                    height: model.height(),
-                }));
+                let command = Command::single(Action::Window(window::Action::Resize(
+                    Id::MAIN,
+                    Size {
+                        width: model.width() as f32,
+                        height: model.height() as f32,
+                    },
+                )));
                 self.model = model;
                 self.settings = settings;
                 self.games = games;

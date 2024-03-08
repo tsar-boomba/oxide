@@ -54,6 +54,8 @@ pub async fn input(button_sender: mpsc::Sender<SystemMessage>) {
             _ => {}
         }
     }
+
+    panic!("Main input task ended!");
 }
 
 async fn handle_menu(
@@ -147,30 +149,37 @@ async fn handle_power(
 
                 // If playing. make sure emulator saved
                 if emulator::playing() {
+                    if sleeping() {
+                        // Need to continue emulator process to save state
+                        wake().await.unwrap();
+                    }
+
                     match emulator::stop_playing().await {
                         Ok(_) => {}
                         Err(err) => tracing::error!("Failed to save: {err:?}"),
                     };
                 } else {
-                    tokio::time::sleep(Duration::from_secs(1)).await;
+                    tokio::time::sleep(Duration::from_millis(500)).await;
                 }
 
                 nix::unistd::sync();
-                tokio::time::sleep(Duration::from_millis(100)).await;
+                tokio::time::sleep(Duration::from_millis(300)).await;
                 std::process::Command::new("poweroff").output().unwrap();
                 loop {}
             } else {
                 // Shorter, sleep/wake
                 if sleeping() {
-                    tracing::debug!("Sleeping...");
-                    button_sender.send(SystemMessage::Wake).await.unwrap();
-                    wake().await.ok();
-                } else {
                     tracing::debug!("Waking...");
+                    wake().await.ok();
+                    button_sender.send(SystemMessage::Wake).await.unwrap();
+                } else {
+                    println!("sleeping");
+                    tracing::debug!("Sleeping...");
                     sleep().await.ok();
                     button_sender.send(SystemMessage::Sleep).await.unwrap();
                 }
             }
+
             // Reset power pressed at
             state.pressed_at = None;
             state

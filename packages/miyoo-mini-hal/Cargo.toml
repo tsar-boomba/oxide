@@ -8,9 +8,10 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["sync", "process", "parking_lot"] }
 tokio-sysfs-pwm = { path = "../tokio-sysfs-pwm" }
-i2cdev = "0.5.1"
+i2cdev = "0.6"
 once_cell = { workspace = true, features = ["parking_lot"] }
 parking_lot = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tracing = { workspace = true }
+nix = { workspace = true }

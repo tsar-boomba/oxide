@@ -115,7 +115,6 @@ where
                         })
                         .into()
                 })
-                .collect(),
         ))
         .id(id.clone())
         .into()

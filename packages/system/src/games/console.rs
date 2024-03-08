@@ -44,7 +44,7 @@ impl Console {
             Self::NES => "",
             Self::Snes => "snes9x2010",
             Self::GBC => "gambatte",
-            Self::GBA => "vbam",
+            Self::GBA => "gpsp",
         }
     }
 }

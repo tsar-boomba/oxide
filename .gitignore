@@ -1,6 +1,8 @@
 /target
 /miyoomini-toolchain
 /build
+.env.build
+armv7.cmake
 .DS_Store
 
 # Libretro frontend testing

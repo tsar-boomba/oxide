@@ -41,3 +41,4 @@ RUN apt-get install -y libaudit1:armhf
 RUN apt-get install -y libcap-ng0:armhf
 RUN apt-get install -y libxcb-shm0:armhf
 RUN apt-get install -y libxcb-render0:armhf
+RUN apt-get install -y libasound2:armhf

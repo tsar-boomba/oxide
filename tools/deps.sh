@@ -51,6 +51,7 @@ docker cp -L oxide-deps:/lib/arm-linux-gnueabihf/libaudit.so.1 ./build/lib/
 docker cp -L oxide-deps:/lib/arm-linux-gnueabihf/libcap-ng.so.0 ./build/lib/
 docker cp -L oxide-deps:/usr/lib/arm-linux-gnueabihf/libxcb-shm.so.0 ./build/lib/
 docker cp -L oxide-deps:/usr/lib/arm-linux-gnueabihf/libxcb-render.so.0 ./build/lib/
+docker cp -L oxide-deps:/usr/lib/arm-linux-gnueabihf/libasound.so.2 ./build/lib/
 
 docker cp -L oxide-deps:/usr/share/X11/xkb ./build/lib
 docker cp -L oxide-deps:/usr/share/pam ./build/lib

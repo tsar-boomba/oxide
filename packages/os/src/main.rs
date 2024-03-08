@@ -11,7 +11,7 @@ fn main() {
                 .read(true)
                 .write(true)
                 .create(true)
-                .open("/mnt/SDCARD/miyoo/app/logs.log")
+                .open("/mnt/SDCARD/miyoo/app/os.log")
                 .unwrap(),
         )
         .init();

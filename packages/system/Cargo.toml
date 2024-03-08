@@ -9,7 +9,7 @@ edition = "2021"
 tokio = { workspace = true, features = ["rt", "time", "macros", "parking_lot"] }
 tracing = { workspace = true }
 nix = { workspace = true, features = ["fs"] }
-sysinfo = "0.29.0"
+sysinfo = "0.30"
 once_cell = { workspace = true }
 parking_lot = { workspace = true }
 launch = { path = "../launch" }
@@ -17,8 +17,8 @@ miyoo-mini-hal = { path = "../miyoo-mini-hal" }
 input = { path = "../input" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-enum-iterator = "1.4.1"
+enum-iterator = "2.0"
 futures-util = { workspace = true }
 fixed-map = { workspace = true, features = ["serde"] }
-tokio-stream = { version = "0.1.14", features = ["fs"] }
+tokio-stream = { version = "0.1", features = ["fs"] }
 ipc = { path = "../ipc", features = ["client"] }

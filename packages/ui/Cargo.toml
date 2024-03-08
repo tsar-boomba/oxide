@@ -7,9 +7,10 @@ edition = "2021"
 
 [dependencies]
 iced = { workspace = true, default-features = false, features = ["tokio", "debug"] }
+iced_runtime = { workspace = true }
 shared-ui = { path = "../shared-ui" }
 tokio = { workspace = true, features = ["sync"] }
-futures-util = "0.3.28"
+futures-util = "0.3"
 system = { path = "../system" }
 input = { path = "../input" }
 tracing = { workspace = true }

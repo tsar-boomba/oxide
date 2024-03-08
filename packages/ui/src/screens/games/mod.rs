@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use iced::{
+    border::Radius,
     color, theme,
-    widget::{column, container, row, runtime::core::BorderRadius, scrollable, text, Text},
-    Background, Command, Element, Length,
+    widget::{column, container, row, scrollable, text, Text},
+    Background, Border, Command, Element, Length,
 };
 use input::Button;
 use once_cell::sync::Lazy;
@@ -153,18 +154,15 @@ impl State {
             if state.selected_console.is_some() {
                 state.game_list.view(app)
             } else {
-                scrollable(row(state
+                row(state
                     .consoles
                     .iter()
                     // TODO: remove cloning here somehow????
                     .copied()
                     .enumerate()
-                    .map(|(i, console)| console_view(console, i == state.selected))
-                    .collect()))
+                    .map(|(i, console)| console_view(console, i == state.selected)))
                 .height(Length::Fill)
                 .width(Length::Fill)
-                .horizontal_scroll(scrollable::Properties::new())
-                .id(scrollable::Id::new("games-scrollable"))
                 .into()
             },
         )
@@ -181,9 +179,11 @@ fn console_view(console: Console, selected: bool) -> Element<'static, Message> {
     )
     .style(move |theme: &'_ iced::Theme| -> container::Appearance {
         container::Appearance {
-            border_radius: BorderRadius::from(8.0),
-            border_width: 2.0,
-            border_color: color!(255, 0, 0),
+            border: Border {
+                radius: Radius::from(8.),
+                width: 2.,
+                color: color!(255, 0, 0),
+            },
             background: if selected {
                 Some(Background::Color(color!(0, 0, 255)))
             } else {

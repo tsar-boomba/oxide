@@ -40,13 +40,11 @@ pub async fn input_task() -> io::Result<(
                         }
                     }
                     Err(err) => {
-                        eprint!("Input event stream error: {}", err);
-                        process::exit(1);
+                        panic!("Input event stream error: {}", err);
                     }
                 },
                 None => {
-                    eprintln!("Input event stream stopped unexpectedly.");
-                    process::exit(1);
+                    panic!("Input event stream stopped unexpectedly.");
                 }
             }
         }

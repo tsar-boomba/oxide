@@ -173,23 +173,8 @@ pub async fn refresh_game_cache() -> io::Result<GameCache> {
 
 /// Gets games from cache or creates cache, then check that all games exist
 pub(crate) async fn init() -> io::Result<GameCache> {
-    // Get games by either method
-    let games = if let Ok(true) = tokio::fs::try_exists(".game_cache.json").await {
-        // Game cache already exists, so avoid all the io and computation to generate it
-        let intermediate: IntermediateGameCache = serde_json::from_reader(
-            tokio::fs::OpenOptions::new()
-                .read(true)
-                .open(".game_cache.json")
-                .await?
-                .into_std()
-                .await,
-        )
-        .unwrap();
-
-        intermediate_to_final(intermediate)
-    } else {
-        refresh_game_cache().await?
-    };
+    // Always just get all games on startup
+    let games = refresh_game_cache().await?;
 
     // Make sure there is a save dir for each core
     let mut dir = tokio::fs::read_dir("/mnt/SDCARD/Cores").await?;

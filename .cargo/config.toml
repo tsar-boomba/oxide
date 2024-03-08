@@ -1,4 +1,6 @@
 [build]
+target = "armv7-unknown-linux-gnueabihf"
 rustflags = [
-	"-C", "target-cpu=native"
+	"-C", "target-cpu=cortex-a7",
+	"-Z", "threads=8"
 ]

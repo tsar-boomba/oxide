@@ -1,11 +1,99 @@
 #!/usr/bin/env -S deno run --allow-run --allow-env --allow-net --allow-read --allow-write
 import { ensureDirSync, emptyDirSync, copySync } from 'https://deno.land/std@0.192.0/fs/mod.ts';
+import { parseArgs } from 'https://deno.land/std@0.207.0/cli/parse_args.ts';
+import { loadSync } from 'https://deno.land/std@0.218.0/dotenv/mod.ts';
 import { cache } from 'https://deno.land/x/cache@0.2.13/mod.ts';
 import { getCores } from './cores.ts';
 
 const TOOLCHAIN_VERSION = 'v0.0.3';
 const TOOLCHAIN_NAME = 'miyoomini-toolchain.tar.xz';
 const TOOLCHAIN_URL = `https://github.com/shauninman/miyoomini-toolchain-buildroot/releases/download/${TOOLCHAIN_VERSION}/${TOOLCHAIN_NAME}`;
+
+const buildEnv = loadSync({
+	envPath: './.env.build',
+	examplePath: './env.build.example',
+	allowEmptyValues: true,
+});
+
+// Parse CLI arguments
+const {
+	native,
+	release,
+	verbose,
+	output,
+	'build-only': buildOnly,
+	['--']: extraCargoArgs,
+} = parseArgs(Deno.args, {
+	boolean: ['native', 'release', 'verbose', 'build-only'],
+	string: ['output'],
+	alias: { native: 'N', verbose: 'v', 'build-only': 'B' },
+	default: { native: false, verbose: false, 'build-only': false, output: '/Volumes/OXIDE-DEV' },
+	'--': true,
+});
+
+// Build rust stuff
+console.log('Begin building rust binary.');
+
+const cargoArgs: string[] = [];
+
+if (release) {
+	cargoArgs.push('--release');
+}
+
+let build: Deno.CommandOutput;
+if (native) {
+	// Just use cargo
+	console.log('Using native cross-compilation.');
+
+	if (Object.keys(buildEnv).length === 0) {
+		console.warn(
+			'WARNING: Running a native build without toolchain environment variables may not work. Check .env.build.example for the variable you may need to successfully build.'
+		);
+	} else if (verbose) {
+		console.log('Build environment:', buildEnv);
+	}
+
+	build = new Deno.Command('cargo', {
+		args: [
+			'build',
+			'--target',
+			'armv7-unknown-linux-gnueabihf',
+			...cargoArgs,
+			...extraCargoArgs,
+		],
+		env: buildEnv,
+		stdout: 'inherit',
+		stderr: 'inherit',
+	}).outputSync();
+} else {
+	if (Deno.build.arch === 'aarch64') {
+		console.log('Using ARM Docker image to build.');
+		build = new Deno.Command('./tools/arm-build.sh', {
+			stdout: 'inherit',
+			stderr: 'inherit',
+		}).outputSync();
+	} else {
+		console.log('Using cross to build.');
+		build = new Deno.Command('cross', {
+			args: ['build', ...cargoArgs],
+			env: {
+				DOCKER_BUILDKIT: '1',
+				CROSS_CONTAINER_OPTS: '--platform linux/amd64',
+			},
+			stdout: 'inherit',
+			stderr: 'inherit',
+		}).outputSync();
+	}
+}
+
+if (!build.success) {
+	Deno.exit(build.code);
+}
+
+if (buildOnly) {
+	console.log('Skipping payload generation.');
+	Deno.exit(0);
+}
 
 console.log('Getting toolchain...');
 const toolchainTar = await cache(TOOLCHAIN_URL);
@@ -31,30 +119,6 @@ if (numFiles <= 0) {
 	}).outputSync();
 } else {
 	console.log('Toolchain files found, skipping decompression. 😁');
-}
-
-// Build rust stuff
-console.log('Begin building rust binary.');
-let build: Deno.CommandOutput;
-if (Deno.build.arch === 'aarch64') {
-	build = new Deno.Command('./tools/arm-build.sh', {
-		stdout: 'inherit',
-		stderr: 'inherit',
-	}).outputSync();
-} else {
-	build = new Deno.Command('cross', {
-		args: ['build', '--release'],
-		env: {
-			DOCKER_BUILDKIT: '1',
-			CROSS_CONTAINER_OPTS: '--platform linux/amd64',
-		},
-		stdout: 'inherit',
-		stderr: 'inherit',
-	}).outputSync();
-}
-
-if (!build.success) {
-	Deno.exit(build.code);
 }
 
 emptyDirSync('build/bin');
@@ -90,6 +154,7 @@ if (!weston.success) {
 
 console.log('Creating payload...');
 const copy = new Deno.Command('./tools/copy.sh', {
+	args: [release ? 'release' : 'debug'],
 	stdout: 'inherit',
 	stderr: 'inherit',
 }).outputSync();
@@ -99,20 +164,24 @@ if (!copy.success) {
 }
 
 // TODO: make this work on any plat and support any sd card name
-const sdCardName = 'OXIDE-DEV';
-console.log(`Adding files to ${sdCardName}...`);
-new Deno.Command('rm', { args: ['-rf', `/Volumes/${sdCardName}/miyoo/**`] }).outputSync();
-copySync('build/PAYLOAD/', '/Volumes/OXIDE-DEV', { overwrite: true });
+console.log(`Adding files to ${output}...`);
+new Deno.Command('rm', { args: ['-rf', `${output}/miyoo/app`] }).outputSync();
+copySync('build/PAYLOAD/', output, { overwrite: true });
 
-const eject = new Deno.Command('diskutil', {
-	args: ['eject', `/Volumes/${sdCardName}`],
-	stdout: 'inherit',
-	stderr: 'inherit',
-}).outputSync();
+if (output.startsWith('/Volumes') && Deno.build.os === 'darwin') {
+	// If on mac and writing to an sd card, eject it afterwards
 
-if (!eject.success) {
-	console.error(`Failed to eject ${sdCardName}`);
-	Deno.exit(eject.code);
+	console.log('Ejecting SD card...');
+	const eject = new Deno.Command('diskutil', {
+		args: ['eject', output],
+		stdout: 'inherit',
+		stderr: 'inherit',
+	}).outputSync();
+
+	if (!eject.success) {
+		console.error(`Failed to eject ${output}`);
+		Deno.exit(eject.code);
+	}
 }
 
 console.log(`Finished build.`);

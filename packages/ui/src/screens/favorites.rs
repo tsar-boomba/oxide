@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use iced::{
     color, theme,
-    widget::{column, container, row, runtime::core::BorderRadius, text, Text},
+    widget::{column, container, row, text, Text},
     Command, Element, Length,
 };
 use input::Button;

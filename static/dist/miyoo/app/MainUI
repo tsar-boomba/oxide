@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# This file gets replaced by the actual os binary after building
+
 # This is the entry point???
 echo "I ran mainui!" > /mnt/SDCARD/mainuitest.txt
 

@@ -1,5 +1,6 @@
 //! Mostly implemented thanks to https://www.retroreversing.com/CreateALibRetroFrontEndInRust
 
+pub mod audio;
 mod render;
 pub mod save;
 mod variable;
@@ -12,15 +13,15 @@ use std::{
     os::unix::prelude::OsStrExt,
     path::Path,
     ptr,
+    time::Instant,
 };
 
 use arc_swap::ArcSwapOption;
-use crossbeam::channel;
 use fixed_map::Map;
 use libloading::Library;
 use libretro_sys::{CoreAPI, GameInfo, PixelFormat, SystemAvInfo};
 use once_cell::sync::OnceCell;
-use parking_lot::Mutex;
+use winit::window::Window;
 
 use crate::{convert, Button, ARGS};
 
@@ -28,7 +29,7 @@ use self::variable::VariableDef;
 
 /// There will only ever be one core loaded per instance of this application
 static CORE: OnceCell<Core> = OnceCell::new();
-static STATE: OnceCell<Mutex<State>> = OnceCell::new();
+static mut STATE: Option<State> = None;
 /// Vec of XRGB8888 bytes
 static CURRENT_FRAME: ArcSwapOption<Vec<u32>> = ArcSwapOption::const_empty();
 
@@ -40,7 +41,7 @@ pub struct Core {
     _lib: libloading::Library,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct State {
     pixel_format: Option<PixelFormat>,
     input_state: Map<Button, bool>,
@@ -58,7 +59,7 @@ pub struct Frame {
 }
 
 /// Loads the library into the `CORE` static and returns a receiver for the frames
-pub fn init(path: impl AsRef<OsStr>) -> channel::Receiver<Frame> {
+pub fn init(path: impl AsRef<OsStr>) {
     unsafe {
         let lib = Library::new(path).expect("Failed to load Core");
 
@@ -103,17 +104,13 @@ pub fn init(path: impl AsRef<OsStr>) -> channel::Receiver<Frame> {
         CORE.set(Core { core, _lib: lib }).unwrap();
 
         // Init with defaults until the core tells us what format to use
-        STATE
-            .set(Mutex::new(State {
-                pixel_format: None,
-                input_state: Map::new(),
-                window_height: 480,
-                window_width: 640,
-                bytes_per_pixel: 4,
-            }))
-            .unwrap();
-
-        let (send, recv) = channel::bounded(32);
+        STATE = Some(State {
+            pixel_format: None,
+            input_state: Map::new(),
+            window_height: 480,
+            window_width: 640,
+            bytes_per_pixel: 4,
+        });
 
         let core = CORE.get().unwrap();
         if (core.retro_api_version)() != EXPECTED_LIB_RETRO_VERSION {
@@ -125,9 +122,7 @@ pub fn init(path: impl AsRef<OsStr>) -> channel::Receiver<Frame> {
         (core.retro_set_input_poll)(libretro_set_input_poll_callback);
         (core.retro_set_input_state)(libretro_set_input_state_callback);
         (core.retro_set_audio_sample)(libretro_set_audio_sample_callback);
-        (core.retro_set_audio_sample_batch)(libretro_set_audio_sample_batch_callback);
-
-        recv
+        (core.retro_set_audio_sample_batch)(audio::handle_audio_sample);
     }
 }
 
@@ -141,17 +136,13 @@ pub fn load_game(path: impl AsRef<Path>) -> io::Result<bool> {
 
     let path = CString::new(path.as_os_str().as_bytes()).unwrap();
 
-    let info = Box::new(GameInfo {
+    let info = GameInfo {
         data: buf.as_ptr() as *const c_void,
         path: path.as_ptr(),
         size: buf.len(),
         meta: ptr::null(),
-    });
-    let loaded_successfully = unsafe { (core.retro_load_game)(&*info as *const GameInfo) };
-
-    // Don't free this memory while core may use it??? (idk if core copies it or nah)
-    std::mem::forget(info);
-    std::mem::forget(buf);
+    };
+    let loaded_successfully = unsafe { (core.retro_load_game)(&info as *const GameInfo) };
 
     Ok(loaded_successfully)
 }
@@ -160,14 +151,14 @@ pub fn load_game(path: impl AsRef<Path>) -> io::Result<bool> {
 pub fn bytes_per_pixel() -> u8 {
     // Cache this so no need to lock state
     static BPP: OnceCell<u8> = OnceCell::new();
-    *BPP.get_or_init(|| STATE.get().unwrap().lock().bytes_per_pixel)
+    *BPP.get_or_init(|| unsafe { STATE.as_ref().unwrap().bytes_per_pixel })
 }
 
 #[inline(always)]
 pub fn pixel_format() -> PixelFormat {
     // Cache this so no need to lock state
     static PIXEL_FORMAT: OnceCell<PixelFormat> = OnceCell::new();
-    *PIXEL_FORMAT.get_or_init(|| STATE.get().unwrap().lock().pixel_format.unwrap())
+    *PIXEL_FORMAT.get_or_init(|| unsafe { STATE.as_ref().unwrap().pixel_format.unwrap() })
 }
 
 #[inline(always)]
@@ -202,20 +193,25 @@ pub fn reset() {
 }
 
 #[inline(always)]
-pub fn render(buffer: softbuffer::Buffer<'_>) {
+pub fn render(buffer: softbuffer::Buffer<'_, &Window, &Window>) {
     render::render(buffer);
 }
 
+/// Runs once without rendering or updating input
 pub fn dry_run() {
     unsafe { (CORE.get().unwrap().retro_run)() }
 }
 
 /// Runs the emulator once
 #[inline(always)]
-pub fn run(buffer: softbuffer::Buffer<'_>, input_state: Map<Button, bool>) {
-    STATE.get().unwrap().lock().input_state = input_state;
+pub fn run(buffer: softbuffer::Buffer<'_, &Window, &Window>, input_state: Map<Button, bool>) {
+    unsafe { STATE.as_mut().unwrap().input_state = input_state };
+    let start = Instant::now();
     unsafe { (CORE.get().unwrap().retro_run)() };
+    tracing::debug!("Run time: {}", (Instant::now() - start).as_millis());
+    let start = Instant::now();
     render(buffer);
+    tracing::debug!("Render time: {}", (Instant::now() - start).as_millis());
 }
 
 impl Deref for Core {
@@ -243,7 +239,7 @@ unsafe extern "C" fn libretro_environment_callback(command: u32, data: *mut c_vo
             return true;
         }
         libretro_sys::ENVIRONMENT_SET_PIXEL_FORMAT => {
-            let mut state = STATE.get().unwrap().lock();
+            let state = STATE.as_mut().unwrap();
             let pixel_format = *(data as *const u32);
             let pixel_format = PixelFormat::from_uint(pixel_format).unwrap();
             match pixel_format {
@@ -304,7 +300,7 @@ unsafe extern "C" fn libretro_set_input_state_callback(
     index: u32,
     id: u32,
 ) -> i16 {
-    let state = STATE.get().unwrap().lock();
+    let state = STATE.as_ref().unwrap();
     let input = &state.input_state;
 
     //tracing::debug!("Input state requested");
@@ -330,22 +326,13 @@ unsafe extern "C" fn libretro_set_input_state_callback(
 
 unsafe extern "C" fn libretro_set_audio_sample_callback(left: i16, right: i16) {}
 
-unsafe extern "C" fn libretro_set_audio_sample_batch_callback(
-    data: *const i16,
-    frames: usize,
-) -> usize {
-    const CHANNELS: usize = 2;
-    let audio = std::slice::from_raw_parts(data, frames * CHANNELS).to_vec();
-    frames
-}
-
-unsafe extern "C" fn log(level: libretro_sys::LogLevel, format_str: *const c_char, mut args: ...) {
+unsafe extern "C" fn log(level: libretro_sys::LogLevel, format_str: *const c_char, args: ...) {
     //GBA DMA: Starting DMA 3 0x03007E44 -> 0x02000000 (8500:0000)
-    nix::libc::printf(format_str, args);
+    //nix::libc::printf(format_str, args);
     match level {
         libretro_sys::LogLevel::Info => tracing::info!("Core"),
-        libretro_sys::LogLevel::Debug => tracing::debug!("Core"),
         libretro_sys::LogLevel::Error => tracing::error!("Core"),
         libretro_sys::LogLevel::Warn => tracing::warn!("Core"),
+        libretro_sys::LogLevel::Debug => {}
     }
 }

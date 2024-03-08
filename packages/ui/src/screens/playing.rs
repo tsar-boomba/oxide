@@ -4,7 +4,6 @@ use iced::{
     color, theme,
     widget::{
         column, container, row,
-        runtime::{command::Action, core::BorderRadius},
         text, Text,
     },
     window, Command, Element, Length,

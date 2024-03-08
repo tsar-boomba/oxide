@@ -1,6 +1,6 @@
 #!/bin/sh
 export WLD=/mnt/SDCARD/miyoo/app/lib/wayland
-export LD_LIBRARY_PATH="/mnt/SDCARD/miyoo/app/lib:$WLD/lib/arm-linux-gnueabihf:$WLD/lib/arm-linux-gnueabihf/weston:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH=/mnt/SDCARD/miyoo/app/lib:$WLD/lib/arm-linux-gnueabihf:$WLD/lib/arm-linux-gnueabihf/weston:/mnt/SDCARD/miyoo/app/lib:$LD_LIBRARY_PATH
 export PATH=$WLD/bin:/mnt/SDCARD/miyoo/app/bin:$PATH
 export FONTCONFIG_PATH=/mnt/SDCARD/miyoo/app
 export FONTCONFIG_FILE=/mnt/SDCARD/miyoo/app/fonts.conf
@@ -36,7 +36,33 @@ ls /sys/power > sys_pwr.txt
 
 ln -s $WLD /tmp/wayland
 
+# perform model-specific logic
+if [ -f /customer/app/axp_test ]; then
+	# Mini Plus
+	export MODEL=354
+
+	# kill default telnetd. Allium will launch its own if needed
+	killall telnetd
+else
+	# OG Mini
+	export MODEL=283
+
+	# init charger detection
+	if [ ! -f /sys/devices/gpiochip0/gpio/gpio59/direction ]; then
+		echo 59 > /sys/class/gpio/export
+		echo in > /sys/devices/gpiochip0/gpio/gpio59/direction
+	fi
+fi
+
+# use audioserver to prevent pop-noise
+if [ -f /customer/lib/libpadsp.so ]; then
+	LD_PRELOAD=as_preload.so audioserver_"$MODEL" &
+	export LD_PRELOAD=/customer/lib/libpadsp.so
+fi
+
 #sleep 30 && sync && poweroff &
+
+ls -al /proc > proc.txt
 
 # Start weston which will launch the actual OS when it is ready
 weston --debug --tty=$WESTON_TTY --config=/mnt/SDCARD/miyoo/app/weston.ini 1> weston.log 2>&1

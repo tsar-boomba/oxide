@@ -81,8 +81,9 @@ pub(crate) async fn task(event_sender: mpsc::Sender<SystemMessage>) {
                 tokio::spawn(async move {
                     tracing::debug!("Started emu watch task.");
                     let status = proc.wait().await;
-                    let status = status.unwrap();
+                    tracing::debug!("Emulator proc ended.");
                     PLAYING.store(false, Ordering::Relaxed);
+                    let status = status.unwrap();
                     if let Some(code) = status.code() {
                         // It was only a crash if there is an exit code
                         // Otherwise it was killed by a signal which is intended
@@ -105,12 +106,11 @@ pub(crate) async fn task(event_sender: mpsc::Sender<SystemMessage>) {
                         nix::libc::kill(pid as i32, nix::libc::SIGKILL);
                     }
                 } else {
-                    tracing::error!("No pid for emulator proc!");
+                    tracing::error!("Tried to kill emulator while no process running!");
                 }
             }
         }
     }
 
-    tracing::error!("Emulator task ended.");
-    std::process::exit(1);
+    panic!("Emulator task ended!!");
 }

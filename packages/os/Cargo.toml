@@ -9,7 +9,7 @@ edition = "2021"
 tokio = { workspace = true, features = ["rt", "time", "macros", "parking_lot"] }
 tracing = { workspace = true }
 mimalloc = { workspace = true, default-features = false }
-nix = { version = "0.26.2", features = ["fs"] }
+nix = { workspace = true, features = ["fs"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 launch = { path = "../launch" }
 miyoo-mini-hal = { path = "../miyoo-mini-hal" }

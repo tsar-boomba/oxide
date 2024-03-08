@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use iced::{
     color, theme,
-    widget::{column, container, row, runtime::core::BorderRadius, text, Text},
+    widget::{column, container, row, text, Text},
     Command, Element, Length,
 };
 use input::Button;
@@ -95,8 +95,7 @@ impl State {
                 // TODO: remove cloning here somehow????
                 .cloned()
                 .enumerate()
-                .map(|(i, button)| button.view(i == state.selected))
-                .collect())
+                .map(|(i, button)| button.view(i == state.selected)))
             .height(Length::Fill)
             .width(Length::Fill)
             .align_items(iced::Alignment::Center)

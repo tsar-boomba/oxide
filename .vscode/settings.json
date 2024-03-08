@@ -1,5 +1,12 @@
 {
 	"deno.enable": true,
 	"rust-analyzer.cargo.target": "armv7-unknown-linux-gnueabihf",
-	"rust-analyzer.cargo.buildScripts.enable": false,
+	"rust-analyzer.cargo.extraEnv": {
+		"TARGET_AR": "armv7-unknown-linux-gnueabihf-ar",
+		"CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER": "armv7-unknown-linux-gnueabihf-gcc",
+		"CC_armv7_unknown_linux_gnueabihf": "armv7-unknown-linux-gnueabihf-gcc",
+		"CXX_armv7_unknown_linux_gnueabihf": "armv7-unknown-linux-gnueabihf-g++",
+		"AR_armv7_unknown_linux_gnueabihf": "armv7-unknown-linux-gnueabihf-ar",
+		"RUSTC_LINKER": "armv7-unknown-linux-gnueabihf-gcc"
+	}
 }
