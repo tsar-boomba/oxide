@@ -2,13 +2,13 @@ use std::future::Future;
 
 use ipc::{
     extract::Json,
-    functions::{Function, SaveState},
+    functions::{Function, SaveState, SaveStateArgs, Start, StartArgs, Stop, StopArgs},
     routing::post,
     Router, StatusCode,
 };
 use tokio::sync::mpsc;
 
-use crate::{backend::BackendMessage, core::save::save, ARGS};
+use crate::{backend::{park_main, unpark_main, BackendMessage}, core::save::save, ARGS};
 
 pub fn server(
     message_sender: mpsc::Sender<BackendMessage>,
@@ -17,8 +17,8 @@ pub fn server(
         .route(
             SaveState::path(),
             post(
-                |Json(args): Json<<SaveState as Function>::ReqBody>| async move {
-                    match save(args.slot.clone()).await {
+                |Json(SaveStateArgs { slot }): Json<<SaveState as Function>::ReqBody>| async move {
+                    match save(slot.clone()).await {
                         Ok(_) => {
                             // All save ops went off with no problem
                             StatusCode::OK
@@ -26,7 +26,7 @@ pub fn server(
                         Err(err) => {
                             tracing::error!(
                                 "Error creating save state: slot: {:?} {:#?}, {err:?}",
-                                args.slot,
+                                slot,
                                 ARGS
                             );
                             StatusCode::INTERNAL_SERVER_ERROR
@@ -34,6 +34,18 @@ pub fn server(
                     }
                 },
             ),
+        )
+        .route(
+            Stop::path(),
+            post(|Json(StopArgs {}): Json<<Stop as Function>::ReqBody>| async move {
+                park_main().await;
+            }),
+        )
+        .route(
+            Start::path(),
+            post(|Json(StartArgs {}): Json<<Start as Function>::ReqBody>| async move {
+                unpark_main();
+            }),
         )
         .with_state(message_sender);
 

@@ -149,11 +149,6 @@ async fn handle_power(
 
                 // If playing. make sure emulator saved
                 if emulator::playing() {
-                    if sleeping() {
-                        // Need to continue emulator process to save state
-                        wake().await.unwrap();
-                    }
-
                     match emulator::stop_playing().await {
                         Ok(_) => {}
                         Err(err) => tracing::error!("Failed to save: {err:?}"),

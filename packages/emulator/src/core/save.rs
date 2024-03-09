@@ -1,68 +1,33 @@
 use std::{
     ffi::c_void,
     io::{self, BufWriter, Read},
-    sync::atomic::{AtomicBool, Ordering},
-    thread::Thread,
-    time::Duration,
 };
 
-use once_cell::sync::OnceCell;
-use tokio::{
-    io::AsyncWriteExt,
-    sync::{mpsc, oneshot},
-};
+use tokio::io::AsyncWriteExt;
 
-use crate::{convert, ARGS};
+use crate::{backend::{park_main, unpark_main}, convert, ARGS};
 
 use super::{CORE, CURRENT_FRAME};
-
-static SAVING_SENDER: OnceCell<mpsc::Sender<oneshot::Sender<Thread>>> = OnceCell::new();
-
-pub fn init() -> mpsc::Receiver<oneshot::Sender<Thread>> {
-    let (sender, receiver) = mpsc::channel(1);
-    SAVING_SENDER.set(sender).unwrap();
-    receiver
-}
 
 /// Saves to save dir with provided slot or `auto` if none is provided
 ///
 /// Calls save_inner while making sure main thread is parked before and unparked after
 pub async fn save(slot: Option<usize>) -> io::Result<()> {
     tracing::info!("saving...");
-    let (sender, ack) = oneshot::channel();
 
-    match SAVING_SENDER.get().unwrap().try_send(sender) {
-        // Already saving, so its okay to just return
-        Ok(_) => {}
-        Err(mpsc::error::TrySendError::Full(_)) => return Ok(()),
-        Err(_) => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Saving receiver dropped",
-            ))
-        }
-    }
-
-    // Wait for main loop to acknowledge saving by sending back its thread on the oneshot
-    let main_thread = ack.await.unwrap();
-
-    let res = save_inner(slot, main_thread).await;
-
-    res
-}
-
-/// Actually perform save operation and unpark main thread after we get data from the core
-async fn save_inner(slot: Option<usize>, main_thread: Thread) -> io::Result<()> {
+    park_main().await;
     let save_data = tokio::task::spawn_blocking(move || {
         let buf_size = unsafe { (CORE.get().unwrap().retro_serialize_size)() };
         tracing::debug!("Save size: {buf_size}");
         let mut buf = vec![0u8; buf_size];
 
+        // SAFETY: main thread is parked and cannot call retro_run during this time, so it is safe
         let serialize_res = unsafe {
             (CORE.get().unwrap().retro_serialize)(buf.as_mut_ptr() as *mut c_void, buf_size)
         };
+
         // Allow main thread to continue execution once serialize is complete
-        main_thread.unpark();
+        unpark_main();
 
         if !serialize_res {
             tracing::error!("retro_serialize failed twice, error out.");

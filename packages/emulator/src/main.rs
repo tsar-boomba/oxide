@@ -20,14 +20,16 @@ use winit::{
 
 use crate::core::save;
 use std::{
-    path::PathBuf,
-    time::{Duration, Instant},
+    path::PathBuf, thread::Thread, time::{Duration, Instant}
 };
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 static ARGS: OnceCell<Args> = OnceCell::new();
 static BACKEND_SENDER: OnceCell<mpsc::Sender<BackendMessage>> = OnceCell::new();
+/// Main will poll this once a frame to check if it should be parked
+static PARK_MAIN: OnceCell<mpsc::Sender<()>> = OnceCell::new();
+static MAIN_THREAD: OnceCell<Thread> = OnceCell::new();
 
 #[derive(Debug, Bpaf)]
 #[bpaf(options)]
@@ -91,6 +93,10 @@ fn main() {
     let args = args().run();
     tracing::debug!("{args:#?}");
     ARGS.set(args).unwrap();
+    MAIN_THREAD.set(std::thread::current()).unwrap();
+
+    let (park_sender, mut park_recv) = mpsc::channel(1);
+    PARK_MAIN.set(park_sender).unwrap();
 
     // Init tokio backend to get input and handle audio
     let (backend_sender, mut input_recv) = backend::start();
@@ -149,7 +155,6 @@ fn main() {
     }
 
     let mut input_state: Map<Button, bool> = Map::new();
-    let mut saving_receiver = save::init();
     let mut last_loop_end = Instant::now();
 
     tracing::debug!("Starting event loop! :D");
@@ -171,11 +176,8 @@ fn main() {
             };
 
             // The sender half can NEVER be dropped so its okay not to handle that case
-            if let Ok(ack) = saving_receiver.try_recv() {
-                let thread = std::thread::current();
-                ack.send(thread).unwrap();
-
-                tracing::debug!("Main thread waiting on save...");
+            if let Ok(_) = park_recv.try_recv() {
+                tracing::debug!("Main thread perking...");
                 // Wait for save op to finish and unpark this thread
                 std::thread::park();
             }

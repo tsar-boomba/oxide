@@ -1,14 +1,22 @@
-use std::{io::{self, Write}, sync::atomic::AtomicBool, time::Duration};
+use std::{
+    io::{self, Write},
+    sync::atomic::AtomicBool,
+};
+use ipc::functions::{StartArgs, StopArgs};
 use sysinfo::{Pid, ProcessStatus, Signal};
 
 use miyoo_mini_hal::screen;
 
-use crate::{asyncify, SYSTEM};
+use crate::{asyncify, emulator::playing, SYSTEM};
 
 static SUSPENDED: AtomicBool = AtomicBool::new(false);
 
 /// Preforms all needed operations to sleep the device (screen off etc.)
 pub async fn sleep() -> io::Result<()> {
+    if playing() {
+        ipc::client::call::<ipc::functions::Stop>(StopArgs {}).await.unwrap();
+    }
+
     stop_all_processes().await?;
     screen::turn_off_screen().await?;
     SUSPENDED.store(true, std::sync::atomic::Ordering::Relaxed);
@@ -18,6 +26,11 @@ pub async fn sleep() -> io::Result<()> {
 /// Preforms all needed operations to wake the device (screen on etc.)
 pub async fn wake() -> io::Result<()> {
     continue_all_processes().await?;
+
+    if playing() {
+        ipc::client::call::<ipc::functions::Start>(StartArgs {}).await.unwrap();
+    }
+
     screen::turn_on_screen().await?;
     SUSPENDED.store(false, std::sync::atomic::Ordering::Relaxed);
     Ok(())
@@ -27,7 +40,17 @@ pub fn sleeping() -> bool {
     SUSPENDED.load(std::sync::atomic::Ordering::Relaxed)
 }
 
-static EXCLUDE_PROCS: [&'static str; 8] = ["sh", "smithay-clipboa", "weston-desktop-", "tokio-runtime-w", "MainUI", "updater", "launch.sh", "tee"];
+static EXCLUDE_PROCS: &'static [&'static str] = &[
+    "sh",
+    "emulator",
+    "smithay-clipboa",
+    "weston-desktop-",
+    "tokio-runtime-w",
+    "MainUI",
+    "updater",
+    "launch.sh",
+    "tee",
+];
 
 async fn stop_all_processes() -> io::Result<()> {
     asyncify(move || {

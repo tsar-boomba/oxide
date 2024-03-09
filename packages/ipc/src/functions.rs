@@ -23,3 +23,31 @@ impl Function for SaveState {
         "/save-state"
     }
 }
+
+pub struct Stop;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StopArgs {}
+
+impl Function for Stop {
+    type ReqBody = StopArgs;
+    type ResBody = ();
+
+    fn path() -> &'static str {
+        "/stop"
+    }
+}
+
+pub struct Start;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StartArgs {}
+
+impl Function for Start {
+    type ReqBody = StartArgs;
+    type ResBody = ();
+
+    fn path() -> &'static str {
+        "/start"
+    }
+}
