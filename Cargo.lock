@@ -338,6 +338,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "build"
+version = "0.1.0"
+
+[[package]]
 name = "bumpalo"
 version = "3.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -875,7 +879,9 @@ name = "emulator"
 version = "0.1.0"
 dependencies = [
  "arc-swap",
+ "audio",
  "bpaf",
+ "build",
  "crossbeam",
  "fast_image_resize",
  "fixed-map",
@@ -2355,6 +2361,7 @@ dependencies = [
 name = "os"
 version = "0.0.1"
 dependencies = [
+ "build",
  "input",
  "launch",
  "mimalloc",
@@ -3142,6 +3149,7 @@ dependencies = [
 name = "system"
 version = "0.1.0"
 dependencies = [
+ "audio",
  "enum-iterator",
  "fixed-map",
  "futures-util",

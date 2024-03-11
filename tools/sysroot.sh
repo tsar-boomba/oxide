@@ -1,13 +1,14 @@
 #!/bin/sh
-docker build -t oxide-deps -f ./tools/deps.dockerfile .
+docker build -t oxide-sysroot -f ./tools/sysroot.dockerfile .
 # if it fails, it already exists probably
-docker create --name oxide-deps oxide-deps || true
+docker create --name oxide-sysroot oxide-sysroot || true
 
 mkdir -p ./build/lib
 mkdir -p ./build/bin
 
 # copy out libs we need to add to the sd card
-docker cp -L oxide-deps:/ ./build/sysroot
+rm -rf ./build/sysroot
+docker cp oxide-sysroot:/ ./build/sysroot
 
 SYSROOT=build/sysroot
 
@@ -63,7 +64,8 @@ cp -LR $SYSROOT/usr/share/pam-configs ./build/lib
 cp -LR $SYSROOT/etc/fonts ./build/font-config
 cp -LR $SYSROOT/etc/fonts/conf.d/ ./build/font-config/conf.d
 
-docker container rm oxide-deps
+ls -la build/sysroot/usr/lib/arm-linux-gnueabihf
+./tools/fixSymlinkLibs.ts
+ls -la build/sysroot/usr/lib/arm-linux-gnueabihf
 
-echo "Got libs:"
-ls ./build/lib
+docker container rm oxide-sysroot

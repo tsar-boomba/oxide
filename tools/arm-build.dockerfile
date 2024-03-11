@@ -13,7 +13,7 @@ RUN apt-get install -y libwayland-dev:armhf
 RUN apt-get install -y libudev-dev:armhf
 RUN apt-get install -y libgbm-dev:armhf
 RUN apt-get install -y libinput-dev:armhf
-RUN apt-get install -y libasound2-dev:armhf
+RUN apt-get install -y libasound2:armhf libasound2-dev:armhf
 RUN apt-get install -y clang
 RUN apt-get install -y g++-arm-linux-gnueabihf
 RUN apt-get install -y libc6-dev-armhf-cross

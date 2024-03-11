@@ -33,17 +33,6 @@ const {
 
 emptyDirSync('build/lib');
 
-console.log('Getting deps...');
-const deps = new Deno.Command('./tools/deps.sh', {
-	stderr: 'piped',
-	stdout: 'piped',
-}).outputSync();
-
-if (!deps.success) {
-	console.error(deps.stderr.toLocaleString());
-	Deno.exit(deps.code);
-}
-
 // Build rust stuff
 console.log('Begin building rust binary.');
 

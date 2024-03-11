@@ -1,3 +1,3 @@
 pub fn init() {
-    cpal::available_hosts();
+    tracing::info!("audio hosts: {:?}", cpal::available_hosts());
 }

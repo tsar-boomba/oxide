@@ -2,18 +2,14 @@
 
 ## Development
 
-This project uses a streamlined docker based workflow, making it portable to any environment with docker and it requires just one command to build the whole project.
+This project uses a streamlined docker based workflow, making it portable to any environment with docker and it requires just one command to build the whole project. Optionally, you can use the provided cross-compilation tools with llvm and clang.
 
 ### Requirements
 
 - Deno
 - Rust
 - Docker (If using Docker for compilation)
-
-
-OR
-
-Build with native cross-compilation tools.
+- LLVM (If doing native cross-compilation)
 
 ### Building
 
@@ -23,7 +19,9 @@ After this completes you can move the contents of `./build/PAYLOAD` to a fat32 f
 
 #### Cross-compiling Natively
 
-By default, the build script uses Docker. To use a native cross-compilation toolchain, add `-N` or `--native` to `./tools/build.ts`.
+By default, the build script uses Docker. To use the native cross-compilation toolchain, you must first run `./tools/setup.ts`, then add `-N` or `--native` to `./tools/build.ts`.
+
+Make sure you have LLVM's `bin` directory in your path or use the `LLVM_BIN` environment variable when running `./tools/setup.ts`.
 
 Ex: `./tools/build.ts -N`
 
