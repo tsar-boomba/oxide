@@ -31,6 +31,19 @@ const {
 	'--': true,
 });
 
+emptyDirSync('build/lib');
+
+console.log('Getting deps...');
+const deps = new Deno.Command('./tools/deps.sh', {
+	stderr: 'piped',
+	stdout: 'piped',
+}).outputSync();
+
+if (!deps.success) {
+	console.error(deps.stderr.toLocaleString());
+	Deno.exit(deps.code);
+}
+
 // Build rust stuff
 console.log('Begin building rust binary.');
 
@@ -122,24 +135,12 @@ if (numFiles <= 0) {
 }
 
 emptyDirSync('build/bin');
-emptyDirSync('build/lib');
 emptyDirSync('build/PAYLOAD');
 ensureDirSync('build/lib');
 ensureDirSync('build/bin');
 
 console.log('Getting cores...');
 await getCores();
-
-console.log('Getting deps...');
-const deps = new Deno.Command('./tools/deps.sh', {
-	stderr: 'piped',
-	stdout: 'piped',
-}).outputSync();
-
-if (!deps.success) {
-	console.error(deps.stderr.toLocaleString());
-	Deno.exit(deps.code);
-}
 
 console.log('Building weston...');
 const weston = new Deno.Command('./tools/weston.sh', {

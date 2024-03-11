@@ -4,3 +4,7 @@ rustflags = [
 	"-C", "target-cpu=cortex-a7",
 	"-Z", "threads=8"
 ]
+
+[env]
+PKG_CONFIG_SYSROOT_DIR ={ value = "build/sysroot", relative = true, force = true }
+PKG_CONFIG_PATH = { value = "build/sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig", relative = true, force = true }
