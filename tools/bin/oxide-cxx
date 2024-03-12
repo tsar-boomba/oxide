@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec $(which clang++) -B"$OXIDE_ROOT/build/llvm-bin" --target=arm-linux-gnueabihf --sysroot="$OXIDE_ROOT/build/sysroot" -fuse-ld=lld --verbose "$@"

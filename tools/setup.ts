@@ -2,10 +2,21 @@
 
 import { ensureDirSync, existsSync } from 'https://deno.land/std@0.192.0/fs/mod.ts';
 
+const cwd = Deno.cwd();
+const wrapperTemplate = (compiler: string) => `#!/bin/sh\nexec $(which ${compiler}) -B${cwd}/build/llvm-bin --target=arm-linux-gnueabihf --sysroot=${cwd}/build/sysroot -fuse-ld=lld --verbose "$@"`;
+const ccWrapper = wrapperTemplate('clang');
+const cxxWrapper = wrapperTemplate('clang++');
+
+console.log('Creating compiler wrappers...');
+
+ensureDirSync('./tools/bin');
+Deno.writeTextFileSync('./tools/bin/oxide-cc', ccWrapper, { append: false });
+Deno.writeTextFileSync('./tools/bin/oxide-cxx', cxxWrapper, { append: false });
+
 console.log('Creating sysroot...');
 const sysroot = new Deno.Command('./tools/sysroot.sh', {
-	stderr: 'piped',
-	stdout: 'piped',
+	stderr: 'inherit',
+	stdout: 'inherit',
 }).outputSync();
 
 if (!sysroot.success) {

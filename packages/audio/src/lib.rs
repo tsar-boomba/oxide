@@ -1,3 +1,5 @@
+mod bindings;
+
 pub fn init() {
-    tracing::info!("audio hosts: {:?}", cpal::available_hosts());
+	bindings::SNDCTL_DSP_CHANNELS;
 }

@@ -1,6 +1,8 @@
 /target
 /miyoomini-toolchain
 /build
+/tools/bin/oxide-cc
+/tools/bin/oxide-cxx
 .env.build
 armv7.cmake
 .DS_Store

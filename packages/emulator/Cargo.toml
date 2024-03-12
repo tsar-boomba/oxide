@@ -7,7 +7,6 @@ edition = "2021"
 build = { path = "../build" }
 
 [dependencies]
-audio = { path = "../audio" }
 bpaf = { version = "0.9", features = ["derive"] }
 mimalloc = { workspace = true }
 libloading = "0.8.0"

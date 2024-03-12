@@ -9,7 +9,6 @@ rustflags = [
 linker = "./tools/bin/oxide-cc"
 
 [env]
-OXIDE_ROOT = { value = "", relative = true, force = true }
 CC_armv7_unknown_linux_gnueabihf = { value = "tools/bin/oxide-cc", relative = true, force = true }
 CXX_armv7_unknown_linux_gnueabihf = { value = "tools/bin/oxide-cxx", relative = true, force = true }
 RUSTC_LINKER = { value = "tools/bin/oxide-cc", relative = true, force = true }

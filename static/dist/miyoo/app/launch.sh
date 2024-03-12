@@ -26,16 +26,6 @@ export XKB_CONFIG_ROOT=/mnt/SDCARD/miyoo/app/lib/xkb
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
-# debug stuff
-echo $PATH > path.txt
-ls /dev > dev.txt
-uname -a > info.txt
-ls /customer/app > customer_dir.txt
-ls /sys > sys.txt
-ls /sys/power > sys_pwr.txt
-
-ln -s $WLD /tmp/wayland
-
 # perform model-specific logic
 if [ -f /customer/app/axp_test ]; then
 	# Mini Plus
@@ -57,12 +47,23 @@ fi
 # use audioserver to prevent pop-noise
 if [ -f /customer/lib/libpadsp.so ]; then
 	LD_PRELOAD=as_preload.so audioserver_"$MODEL" &
-	export LD_PRELOAD=/customer/lib/libpadsp.so
+	export LD_PRELOAD=/customer/lib/libpadsp.so:$LD_PRELOAD
 fi
 
 #sleep 30 && sync && poweroff &
 
+# TODO: remove
+sleep 3
+
 ls -al /proc > proc.txt
+# debug stuff
+echo $PATH > path.txt
+ls /dev > dev.txt
+uname -a > info.txt
+ls -a /customer/app > customer_dir.txt
+ls -a /sys > sys.txt
+ls -a /sys/power > sys_pwr.txt
+ls -a /tmp
 
 # Start weston which will launch the actual OS when it is ready
 weston --debug --tty=$WESTON_TTY --config=/mnt/SDCARD/miyoo/app/weston.ini 1> weston.log 2>&1

@@ -47,11 +47,7 @@ if (native) {
 	// Just use cargo
 	console.log('Using native cross-compilation.');
 
-	if (Object.keys(buildEnv).length === 0) {
-		console.warn(
-			'WARNING: Running a native build without toolchain environment variables may not work. Check .env.build.example for the variable you may need to successfully build.'
-		);
-	} else if (verbose) {
+	if (Object.keys(buildEnv).length !== 0) {
 		console.log('Build environment:', buildEnv);
 	}
 
