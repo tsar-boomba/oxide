@@ -9,16 +9,16 @@ impl bindgen::callbacks::ParseCallbacks for Fix753 {
 }
 
 fn main() {
-	let sysroot = build::sysroot();
+    let sysroot = build::sysroot();
 
-	// The bindgen::Builder is the main entry point
+    // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
     let bindings = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
         .header("wrapper.h")
-		.clang_arg(format!("--sysroot={sysroot}"))
+        .clang_arg(format!("--sysroot={sysroot}"))
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(Fix753))

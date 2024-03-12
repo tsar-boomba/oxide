@@ -20,7 +20,9 @@ use winit::{
 
 use crate::core::save;
 use std::{
-    path::PathBuf, thread::Thread, time::{Duration, Instant}
+    path::PathBuf,
+    thread::Thread,
+    time::{Duration, Instant},
 };
 
 #[global_allocator]

@@ -49,8 +49,6 @@ pub fn task() -> (
 ) {
     let (event_sender, event_receiver) = mpsc::channel(64);
 
-    audio::init();
-
     (event_receiver, async move {
         let (settings, games) = join(
             async move {

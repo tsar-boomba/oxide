@@ -97,25 +97,20 @@ where
         } = self;
         let selected = selected.clone();
 
-        scrollable(column(
-            items
-                .iter()
-                .enumerate()
-                .map(|(i, item)| {
-                    container((item.children)(app))
-                        .padding(8)
-                        .width(Length::Fill)
-                        .style(move |_theme: &'_ iced::Theme| container::Appearance {
-                            background: if selected == i {
-                                Some(iced::Background::Color(color!(255, 0, 0)))
-                            } else {
-                                None
-                            },
-                            ..Default::default()
-                        })
-                        .into()
+        scrollable(column(items.iter().enumerate().map(|(i, item)| {
+            container((item.children)(app))
+                .padding(8)
+                .width(Length::Fill)
+                .style(move |_theme: &'_ iced::Theme| container::Appearance {
+                    background: if selected == i {
+                        Some(iced::Background::Color(color!(255, 0, 0)))
+                    } else {
+                        None
+                    },
+                    ..Default::default()
                 })
-        ))
+                .into()
+        })))
         .id(id.clone())
         .into()
     }

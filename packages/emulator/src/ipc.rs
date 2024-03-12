@@ -8,7 +8,11 @@ use ipc::{
 };
 use tokio::sync::mpsc;
 
-use crate::{backend::{park_main, unpark_main, BackendMessage}, core::save::save, ARGS};
+use crate::{
+    backend::{park_main, unpark_main, BackendMessage},
+    core::save::save,
+    ARGS,
+};
 
 pub fn server(
     message_sender: mpsc::Sender<BackendMessage>,
@@ -37,15 +41,19 @@ pub fn server(
         )
         .route(
             Stop::path(),
-            post(|Json(StopArgs {}): Json<<Stop as Function>::ReqBody>| async move {
-                park_main().await;
-            }),
+            post(
+                |Json(StopArgs {}): Json<<Stop as Function>::ReqBody>| async move {
+                    park_main().await;
+                },
+            ),
         )
         .route(
             Start::path(),
-            post(|Json(StartArgs {}): Json<<Start as Function>::ReqBody>| async move {
-                unpark_main();
-            }),
+            post(
+                |Json(StartArgs {}): Json<<Start as Function>::ReqBody>| async move {
+                    unpark_main();
+                },
+            ),
         )
         .with_state(message_sender);
 

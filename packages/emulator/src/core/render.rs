@@ -2,20 +2,14 @@ use std::{
     ffi::c_void,
     num::NonZeroU32,
     path::Path,
-    sync::{
-        atomic::AtomicUsize,
-        Arc,
-    },
+    sync::{atomic::AtomicUsize, Arc},
 };
 
 use fast_image_resize::{CropBox, PixelType, Resizer};
 use libretro_sys::PixelFormat;
 use winit::window::Window;
 
-use crate::{
-    convert,
-    core::av_info,
-};
+use crate::{convert, core::av_info};
 
 use super::{bytes_per_pixel, pixel_format};
 

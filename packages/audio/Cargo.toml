@@ -8,5 +8,5 @@ build = { path = "../build" }
 bindgen = "0.69.4"
 
 [dependencies]
-nix = { workspace = true }
+nix = { workspace = true, features = ["ioctl"] }
 tracing = { workspace = true }

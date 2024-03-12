@@ -1,8 +1,8 @@
+use ipc::functions::{StartArgs, StopArgs};
 use std::{
     io::{self, Write},
     sync::atomic::AtomicBool,
 };
-use ipc::functions::{StartArgs, StopArgs};
 use sysinfo::{Pid, ProcessStatus, Signal};
 
 use miyoo_mini_hal::screen;
@@ -14,7 +14,9 @@ static SUSPENDED: AtomicBool = AtomicBool::new(false);
 /// Preforms all needed operations to sleep the device (screen off etc.)
 pub async fn sleep() -> io::Result<()> {
     if playing() {
-        ipc::client::call::<ipc::functions::Stop>(StopArgs {}).await.unwrap();
+        ipc::client::call::<ipc::functions::Stop>(StopArgs {})
+            .await
+            .unwrap();
     }
 
     stop_all_processes().await?;
@@ -28,7 +30,9 @@ pub async fn wake() -> io::Result<()> {
     continue_all_processes().await?;
 
     if playing() {
-        ipc::client::call::<ipc::functions::Start>(StartArgs {}).await.unwrap();
+        ipc::client::call::<ipc::functions::Start>(StartArgs {})
+            .await
+            .unwrap();
     }
 
     screen::turn_on_screen().await?;

@@ -3,7 +3,8 @@
 import { ensureDirSync, existsSync } from 'https://deno.land/std@0.192.0/fs/mod.ts';
 
 const cwd = Deno.cwd();
-const wrapperTemplate = (compiler: string) => `#!/bin/sh\nexec $(which ${compiler}) -B${cwd}/build/llvm-bin --target=arm-linux-gnueabihf --sysroot=${cwd}/build/sysroot -fuse-ld=lld --verbose "$@"`;
+const wrapperTemplate = (compiler: string) =>
+	`#!/bin/sh\nexec $(which ${compiler}) -B${cwd}/build/llvm-bin --target=arm-linux-gnueabihf --sysroot=${cwd}/build/sysroot -Wl,--sysroot=${cwd}/build/sysroot -fuse-ld=lld --verbose "$@"`;
 const ccWrapper = wrapperTemplate('clang');
 const cxxWrapper = wrapperTemplate('clang++');
 

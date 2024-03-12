@@ -5,7 +5,10 @@ use std::{
 
 use tokio::io::AsyncWriteExt;
 
-use crate::{backend::{park_main, unpark_main}, convert, ARGS};
+use crate::{
+    backend::{park_main, unpark_main},
+    convert, ARGS,
+};
 
 use super::{CORE, CURRENT_FRAME};
 
