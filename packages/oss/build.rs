@@ -18,6 +18,7 @@ fn main() {
         // The input header we would like to generate
         // bindings for.
         .header("wrapper.h")
+        .derive_default(true)
         .clang_arg(format!("--sysroot={sysroot}"))
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.

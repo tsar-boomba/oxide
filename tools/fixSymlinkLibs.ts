@@ -1,9 +1,10 @@
 #!/usr/bin/env -S deno run --allow-run --allow-env --allow-net --allow-read --allow-write
+
 /**
  * Goes through the sysroot /usr/lib/arm-linux-gnueabihf dir and removes symlinks to /lib/arm-linux-gnueabihf
  */
 
-console.log('Fixing symlinks libs...');
+console.log('Fixing symlinked libs...');
 
 for (const entry of Deno.readDirSync('./build/sysroot/usr/lib/arm-linux-gnueabihf')) {
 	if (entry.isSymlink) {

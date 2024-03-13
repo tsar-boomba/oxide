@@ -1,7 +1,7 @@
 #include "../../build/sysroot/usr/include/linux/soundcard.h"
 #include <stddef.h>
 
-#define MACRO_TO_CONST(M) const size_t Fix753_##M = (M);
+#define MACRO_TO_CONST(M) const unsigned int Fix753_##M = (M);
 
 MACRO_TO_CONST(SNDCTL_DSP_RESET)
 MACRO_TO_CONST(SNDCTL_DSP_SYNC)

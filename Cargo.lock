@@ -150,16 +150,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
-name = "audio"
-version = "0.1.0"
-dependencies = [
- "bindgen",
- "build",
- "nix 0.28.0",
- "tracing",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2275,6 +2265,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "oss"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "build",
+ "nix 0.28.0",
+ "tracing",
+]
+
+[[package]]
 name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3060,7 +3060,6 @@ dependencies = [
 name = "system"
 version = "0.1.0"
 dependencies = [
- "audio",
  "enum-iterator",
  "fixed-map",
  "futures-util",
