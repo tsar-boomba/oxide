@@ -7,6 +7,7 @@ edition = "2021"
 build = { path = "../build" }
 
 [dependencies]
+oss = { path = "../oss" }
 bpaf = { version = "0.9", features = ["derive"] }
 mimalloc = { workspace = true }
 libloading = "0.8.0"

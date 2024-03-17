@@ -15,14 +15,15 @@ pub struct VariableDef {
 }
 
 impl Variable {
+    /// This function assumes `raw` is a non-null pointer to a valid libretro `Variable` struct
     pub unsafe fn from_raw(raw: *const libretro_sys::Variable) -> Self {
         let raw = &*(raw);
         Self {
-            key: cstr_to_boxed_str(raw.key.cast()),
+            key: raw_cstr_to_boxed_str(raw.key.cast()),
             value: if raw.value.is_null() {
                 None
             } else {
-                Some(cstr_to_boxed_str(raw.value.cast()))
+                Some(raw_cstr_to_boxed_str(raw.value.cast()))
             },
         }
     }
@@ -44,7 +45,7 @@ impl VariableDef {
                 break;
             }
 
-            let key = cstr_to_boxed_str(raw_key.cast());
+            let key = raw_cstr_to_boxed_str(raw_key.cast());
             // Borrow str to parse it before allocating
             let unparsed_value = CStr::from_ptr(raw_value.cast()).to_str().unwrap();
             let (desc, opts) = unparsed_value
@@ -66,7 +67,7 @@ impl VariableDef {
     }
 }
 
-unsafe fn cstr_to_boxed_str(raw_cstr: *const c_char) -> Box<str> {
+unsafe fn raw_cstr_to_boxed_str(raw_cstr: *const c_char) -> Box<str> {
     if raw_cstr.is_null() {
         panic!("Received a null pointer.")
     }

@@ -31,8 +31,6 @@ const {
 	'--': true,
 });
 
-emptyDirSync('build/lib');
-
 // Build rust stuff
 console.log('Begin building rust binary.');
 
@@ -47,8 +45,12 @@ if (native) {
 	// Just use cargo
 	console.log('Using native cross-compilation.');
 
-	if (Object.keys(buildEnv).length !== 0) {
+	if (Object.keys(buildEnv).length !== 0 && verbose) {
 		console.log('Build environment:', buildEnv);
+	}
+
+	if (verbose) {
+		console.log('Cargo Args: ', [...cargoArgs, ...extraCargoArgs]);
 	}
 
 	build = new Deno.Command('cargo', {
@@ -59,16 +61,18 @@ if (native) {
 			...cargoArgs,
 			...extraCargoArgs,
 		],
-		env: buildEnv,
 		stdout: 'inherit',
 		stderr: 'inherit',
+		stdin: 'null',
 	}).outputSync();
 } else {
 	if (Deno.build.arch === 'aarch64') {
+		// Have separate build script for arm hosts to avoid QEMU slowdown
 		console.log('Using ARM Docker image to build.');
 		build = new Deno.Command('./tools/arm-build.sh', {
 			stdout: 'inherit',
 			stderr: 'inherit',
+			stdin: 'null',
 		}).outputSync();
 	} else {
 		console.log('Using cross to build.');
@@ -80,6 +84,7 @@ if (native) {
 			},
 			stdout: 'inherit',
 			stderr: 'inherit',
+			stdin: 'null',
 		}).outputSync();
 	}
 }
@@ -134,7 +139,7 @@ const weston = new Deno.Command('./tools/weston.sh', {
 }).outputSync();
 
 if (!weston.success) {
-	console.error(weston.stderr.toLocaleString());
+	console.error(new TextDecoder().decode(weston.stdout));
 	Deno.exit(weston.code);
 }
 

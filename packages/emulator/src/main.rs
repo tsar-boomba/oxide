@@ -75,7 +75,7 @@ fn main() {
     tracing_subscriber::fmt()
         .with_ansi(false)
         .compact()
-        .with_env_filter("emulator=debug")
+        .with_env_filter("oss=debug,emulator=debug")
         .with_writer(
             std::fs::OpenOptions::new()
                 .read(true)

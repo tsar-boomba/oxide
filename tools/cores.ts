@@ -50,6 +50,8 @@ export const getCores = async () => {
 	// Use a pooled map to ensure we don't do too many requests at once
 	const results = pooledMap(5, promises, (p) => p);
 
+	results.next()
+
 	for await (const _ of results) {
 		// Just wait for all cores to be processed
 	}

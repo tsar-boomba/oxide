@@ -23,6 +23,8 @@ export WAYLAND_DISPLAY=wayland-1
 export XDG_RUNTIME_DIR="/tmp/user/root"
 export XKB_CONFIG_ROOT=/mnt/SDCARD/miyoo/app/lib/xkb
 
+ln -s $WLD /tmp/wayland
+
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
@@ -63,7 +65,7 @@ uname -a > info.txt
 ls -a /customer/app > customer_dir.txt
 ls -a /sys > sys.txt
 ls -a /sys/power > sys_pwr.txt
-ls -a /tmp
+ls -a /tmp > tmp.txt
 
 # Start weston which will launch the actual OS when it is ready
 weston --debug --tty=$WESTON_TTY --config=/mnt/SDCARD/miyoo/app/weston.ini 1> weston.log 2>&1

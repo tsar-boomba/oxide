@@ -121,7 +121,6 @@ pub fn init(path: impl AsRef<OsStr>) {
         (core.retro_set_video_refresh)(render::handle_raw_frame);
         (core.retro_set_input_poll)(libretro_set_input_poll_callback);
         (core.retro_set_input_state)(libretro_set_input_state_callback);
-        (core.retro_set_audio_sample)(libretro_set_audio_sample_callback);
         (core.retro_set_audio_sample_batch)(audio::handle_audio_sample);
     }
 }
@@ -280,10 +279,15 @@ unsafe extern "C" fn libretro_environment_callback(command: u32, data: *mut c_vo
         // Set minimum audio latency
         63 => {
             tracing::debug!("Set audio latency");
-            return true;
+            return false;
         }
         // Fast-forwarding override
         64 => return true,
+        // Audio buffer status callback
+        62 => {
+            let cb = *(data as *const unsafe extern "C" fn(bool, u32, bool));
+            return true;
+        }
         _ => tracing::debug!(
             "libretro_environment_callback Called with command: {}",
             command

@@ -818,6 +818,7 @@ dependencies = [
  "mimalloc",
  "nix 0.28.0",
  "once_cell",
+ "oss",
  "parking_lot 0.12.1",
  "png",
  "rgb565",
